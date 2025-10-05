@@ -16,6 +16,7 @@ interface Project {
   tech: string[];
   link: string;
   display_order: number;
+  image_url?: string;
 }
 
 interface Settings {
@@ -29,13 +30,16 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [contactLink, setContactLink] = useState("");
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
     tech: "",
     link: "",
+    image: null as File | null,
   });
+  const [editProjectImage, setEditProjectImage] = useState<File | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -162,18 +166,86 @@ const Admin = () => {
     }
 
     try {
+      let imageUrl = null;
+
+      if (newProject.image) {
+        const fileExt = newProject.image.name.split(".").pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("project-images")
+          .upload(fileName, newProject.image);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from("project-images")
+          .getPublicUrl(fileName);
+
+        imageUrl = data.publicUrl;
+      }
+
       const { error } = await supabase.from("projects").insert({
         title: newProject.title,
         description: newProject.description,
         tech: newProject.tech.split(",").map((t) => t.trim()),
         link: newProject.link || "#",
         display_order: projects.length,
+        image_url: imageUrl,
       });
 
       if (error) throw error;
 
       toast({ title: "Success", description: "Project added" });
-      setNewProject({ title: "", description: "", tech: "", link: "" });
+      setNewProject({ title: "", description: "", tech: "", link: "", image: null });
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateProject = async () => {
+    if (!editingProject) return;
+
+    try {
+      let imageUrl = editingProject.image_url;
+
+      if (editProjectImage) {
+        const fileExt = editProjectImage.name.split(".").pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("project-images")
+          .upload(fileName, editProjectImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from("project-images")
+          .getPublicUrl(fileName);
+
+        imageUrl = data.publicUrl;
+      }
+
+      const { error } = await supabase.from("projects")
+        .update({
+          title: editingProject.title,
+          description: editingProject.description,
+          tech: editingProject.tech,
+          link: editingProject.link,
+          image_url: imageUrl,
+        })
+        .eq("id", editingProject.id);
+
+      if (error) throw error;
+
+      toast({ title: "Success", description: "Project updated" });
+      setEditingProject(null);
+      setEditProjectImage(null);
       fetchData();
     } catch (error: any) {
       toast({
@@ -277,85 +349,184 @@ const Admin = () => {
                   key={project.id}
                   className="flex justify-between items-start p-4 bg-card/50 rounded-lg border border-border"
                 >
-                  <div>
-                    <h3 className="font-semibold">{project.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {project.description}
-                    </p>
-                    <div className="flex gap-2 mt-2">
-                      {project.tech.map((tech, i) => (
-                        <span
-                          key={i}
-                          className="text-xs px-2 py-1 bg-primary/10 text-primary rounded"
-                        >
-                          {tech}
-                        </span>
-                      ))}
+                  <div className="flex gap-4 flex-1">
+                    {project.image_url && (
+                      <img
+                        src={project.image_url}
+                        alt={project.title}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                    )}
+                    <div>
+                      <h3 className="font-semibold">{project.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {project.description}
+                      </p>
+                      <div className="flex gap-2 mt-2">
+                        {project.tech.map((tech, i) => (
+                          <span
+                            key={i}
+                            className="text-xs px-2 py-1 bg-primary/10 text-primary rounded"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteProject(project.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingProject(project)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteProject(project.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-border pt-6">
-              <h3 className="text-xl font-semibold mb-4">Add New Project</h3>
-              <div className="space-y-4">
-                <div>
-                  <Label>Title</Label>
-                  <Input
-                    value={newProject.title}
-                    onChange={(e) =>
-                      setNewProject({ ...newProject, title: e.target.value })
-                    }
-                    placeholder="Project Title"
-                  />
+            {editingProject ? (
+              <div className="border-t border-border pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold">Edit Project</h3>
+                  <Button variant="ghost" onClick={() => {
+                    setEditingProject(null);
+                    setEditProjectImage(null);
+                  }}>
+                    Cancel
+                  </Button>
                 </div>
-                <div>
-                  <Label>Description</Label>
-                  <Textarea
-                    value={newProject.description}
-                    onChange={(e) =>
-                      setNewProject({
-                        ...newProject,
-                        description: e.target.value,
-                      })
-                    }
-                    placeholder="Project Description"
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <Label>Title</Label>
+                    <Input
+                      value={editingProject.title}
+                      onChange={(e) =>
+                        setEditingProject({ ...editingProject, title: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea
+                      value={editingProject.description}
+                      onChange={(e) =>
+                        setEditingProject({ ...editingProject, description: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Technologies (comma separated)</Label>
+                    <Input
+                      value={editingProject.tech.join(", ")}
+                      onChange={(e) =>
+                        setEditingProject({
+                          ...editingProject,
+                          tech: e.target.value.split(",").map((t) => t.trim()),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Link</Label>
+                    <Input
+                      value={editingProject.link}
+                      onChange={(e) =>
+                        setEditingProject({ ...editingProject, link: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Project Image</Label>
+                    {editingProject.image_url && !editProjectImage && (
+                      <img
+                        src={editingProject.image_url}
+                        alt="Current"
+                        className="w-32 h-32 object-cover rounded mb-2"
+                      />
+                    )}
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setEditProjectImage(e.target.files?.[0] || null)}
+                    />
+                  </div>
+                  <Button onClick={handleUpdateProject}>Update Project</Button>
                 </div>
-                <div>
-                  <Label>Technologies (comma separated)</Label>
-                  <Input
-                    value={newProject.tech}
-                    onChange={(e) =>
-                      setNewProject({ ...newProject, tech: e.target.value })
-                    }
-                    placeholder="React, Node.js, MongoDB"
-                  />
-                </div>
-                <div>
-                  <Label>Link (optional)</Label>
-                  <Input
-                    value={newProject.link}
-                    onChange={(e) =>
-                      setNewProject({ ...newProject, link: e.target.value })
-                    }
-                    placeholder="https://example.com"
-                  />
-                </div>
-                <Button onClick={handleAddProject}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Project
-                </Button>
               </div>
-            </div>
+            ) : (
+              <div className="border-t border-border pt-6">
+                <h3 className="text-xl font-semibold mb-4">Add New Project</h3>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Title</Label>
+                    <Input
+                      value={newProject.title}
+                      onChange={(e) =>
+                        setNewProject({ ...newProject, title: e.target.value })
+                      }
+                      placeholder="Project Title"
+                    />
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Textarea
+                      value={newProject.description}
+                      onChange={(e) =>
+                        setNewProject({
+                          ...newProject,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Project Description"
+                    />
+                  </div>
+                  <div>
+                    <Label>Technologies (comma separated)</Label>
+                    <Input
+                      value={newProject.tech}
+                      onChange={(e) =>
+                        setNewProject({ ...newProject, tech: e.target.value })
+                      }
+                      placeholder="React, Node.js, MongoDB"
+                    />
+                  </div>
+                  <div>
+                    <Label>Link (optional)</Label>
+                    <Input
+                      value={newProject.link}
+                      onChange={(e) =>
+                        setNewProject({ ...newProject, link: e.target.value })
+                      }
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                  <div>
+                    <Label>Project Image</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setNewProject({ ...newProject, image: e.target.files?.[0] || null })
+                      }
+                    />
+                  </div>
+                  <Button onClick={handleAddProject}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Project
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
       </div>

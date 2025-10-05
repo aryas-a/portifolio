@@ -12,6 +12,7 @@ interface Project {
   tech: string[];
   link: string;
   display_order: number;
+  image_url?: string;
 }
 
 const Index = () => {
@@ -124,6 +125,16 @@ const Index = () => {
                 className="group relative overflow-hidden bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 hover:shadow-glow animate-scale-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
+                {project.image_url && (
+                  <div className="relative h-48 w-full overflow-hidden">
+                    <img 
+                      src={project.image_url} 
+                      alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
+                  </div>
+                )}
                 <div className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
                     <h3 className="text-2xl font-semibold group-hover:text-primary transition-colors">
