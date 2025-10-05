@@ -1,35 +1,47 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import profileImage from "@/assets/profile.jpg";
 import { Code2, ExternalLink, Send } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  tech: string[];
+  link: string;
+  display_order: number;
+}
 
 const Index = () => {
-  const projects = [
-    {
-      title: "E-Commerce Platform",
-      description: "A full-stack e-commerce solution with payment integration and real-time inventory management.",
-      tech: ["React", "Node.js", "PostgreSQL"],
-      link: "#",
-    },
-    {
-      title: "AI Content Generator",
-      description: "An intelligent content creation tool powered by machine learning algorithms.",
-      tech: ["Python", "TensorFlow", "React"],
-      link: "#",
-    },
-    {
-      title: "Project Management Dashboard",
-      description: "Collaborative project management platform with real-time updates and analytics.",
-      tech: ["TypeScript", "Next.js", "MongoDB"],
-      link: "#",
-    },
-    {
-      title: "Mobile Banking App",
-      description: "Secure mobile banking application with biometric authentication and instant transfers.",
-      tech: ["React Native", "Firebase", "Node.js"],
-      link: "#",
-    },
-  ];
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [profileImageUrl, setProfileImageUrl] = useState(profileImage);
+  const [contactLink, setContactLink] = useState("https://t.me/yourusername");
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const [projectsRes, settingsRes] = await Promise.all([
+      supabase.from("projects").select("*").order("display_order"),
+      supabase.from("settings").select("*").single(),
+    ]);
+
+    if (projectsRes.data) {
+      setProjects(projectsRes.data);
+    }
+
+    if (settingsRes.data) {
+      if (settingsRes.data.profile_image_url) {
+        setProfileImageUrl(settingsRes.data.profile_image_url);
+      }
+      if (settingsRes.data.contact_link) {
+        setContactLink(settingsRes.data.contact_link);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,7 +60,7 @@ const Index = () => {
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-full blur-lg opacity-75 group-hover:opacity-100 transition duration-500" />
                 <img
-                  src={profileImage}
+                  src={profileImageUrl}
                   alt="Arya's Profile"
                   className="relative w-64 h-64 md:w-80 md:h-80 object-cover rounded-full border-4 border-card shadow-2xl"
                 />
@@ -82,7 +94,7 @@ const Index = () => {
                   size="lg" 
                   variant="outline"
                   className="border-primary/50 hover:bg-primary/10"
-                  onClick={() => window.open("https://t.me/yourusername", "_blank")}
+                  onClick={() => window.open(contactLink, "_blank")}
                 >
                   <Send className="w-4 h-4 mr-2" />
                   Contact Me
@@ -154,7 +166,7 @@ const Index = () => {
               <Button 
                 size="lg"
                 className="bg-gradient-to-r from-primary to-accent hover:shadow-glow transition-all duration-300 text-lg px-8"
-                onClick={() => window.open("https://t.me/yourusername", "_blank")}
+                onClick={() => window.open(contactLink, "_blank")}
               >
                 <Send className="w-5 h-5 mr-2" />
                 Contact Me on Telegram
