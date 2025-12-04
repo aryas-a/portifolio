@@ -105,10 +105,10 @@ const Index = () => {
                 "Code is poetry written in logic. Every line tells a story, every function solves a problem."
               </p>
               
-              <div className="flex gap-4 justify-center md:justify-start pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-center md:justify-start pt-4 w-full max-w-sm mx-auto md:mx-0">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-primary to-accent hover:shadow-glow transition-all duration-300"
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent hover:shadow-glow transition-all duration-300"
                   onClick={() => window.location.href = "#projects"}
                 >
                   View Projects
@@ -116,7 +116,7 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="border-primary/50 hover:bg-primary/10"
+                  className="w-full sm:w-auto border-primary/50 hover:bg-primary/10"
                   onClick={() => window.open(contactLink, "_blank")}
                 >
                   <Send className="w-4 h-4 mr-2" />
@@ -231,14 +231,16 @@ const Index = () => {
               <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
                 Have a project in mind? I'm always open to discussing new opportunities and creative collaborations.
               </p>
-              <Button 
-                size="lg"
-                className="bg-gradient-to-r from-primary to-accent hover:shadow-glow transition-all duration-300 text-lg px-8"
-                onClick={() => window.open(contactLink, "_blank")}
-              >
-                <Send className="w-5 h-5 mr-2" />
-                Contact Me on Telegram
-              </Button>
+              <div className="max-w-sm mx-auto">
+                <Button 
+                  size="lg"
+                  className="w-full sm:w-auto justify-center bg-gradient-to-r from-primary to-accent hover:shadow-glow transition-all duration-300 text-lg px-8"
+                  onClick={() => window.open(contactLink, "_blank")}
+                >
+                  <Send className="w-5 h-5 mr-2" />
+                  Contact Me on Telegram
+                </Button>
+              </div>
             </Card>
           </div>
         </div>
