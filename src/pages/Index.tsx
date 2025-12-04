@@ -15,6 +15,28 @@ interface Project {
   image_url?: string;
 }
 
+// Treat image_url as a general media URL (image/video or YouTube/Vimeo)
+const isYouTubeUrl = (url: string) => /(?:youtube\.com\/watch\?v=|youtu\.be\/)/i.test(url);
+const isVimeoUrl = (url: string) => /(?:vimeo\.com\/)/i.test(url);
+const getYouTubeEmbedUrl = (url: string) => {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) {
+      const id = u.pathname.replace("/", "");
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    const id = u.searchParams.get("v");
+    return id ? `https://www.youtube.com/embed/${id}` : url;
+  } catch {
+    return url;
+  }
+};
+const getVimeoEmbedUrl = (url: string) => {
+  const match = url.match(/vimeo\.com\/(\d+)/);
+  return match ? `https://player.vimeo.com/video/${match[1]}` : url;
+};
+const isVideoFileUrl = (url: string) => /(\.mp4|\.webm|\.ogg)(\?.*)?$/i.test(url);
+
 const Index = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [profileImageUrl, setProfileImageUrl] = useState(profileImage);
@@ -127,11 +149,36 @@ const Index = () => {
               >
                 {project.image_url && (
                   <div className="relative h-48 w-full overflow-hidden">
-                    <img 
-                      src={project.image_url} 
-                      alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                    {isYouTubeUrl(project.image_url) ? (
+                      <iframe
+                        src={getYouTubeEmbedUrl(project.image_url)}
+                        title={project.title}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    ) : isVimeoUrl(project.image_url) ? (
+                      <iframe
+                        src={getVimeoEmbedUrl(project.image_url)}
+                        title={project.title}
+                        className="w-full h-full"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : isVideoFileUrl(project.image_url) ? (
+                      <video
+                        className="w-full h-full object-cover"
+                        src={project.image_url}
+                        controls
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img 
+                        src={project.image_url} 
+                        alt={project.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
                   </div>
                 )}
@@ -140,7 +187,17 @@ const Index = () => {
                     <h3 className="text-2xl font-semibold group-hover:text-primary transition-colors">
                       {project.title}
                     </h3>
-                    <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
+                    {project.link && project.link !== "#" && (
+                      <a
+                        href={project.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open ${project.title}`}
+                        className="shrink-0"
+                      >
+                        <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
+                      </a>
+                    )}
                   </div>
                   
                   <p className="text-muted-foreground leading-relaxed">

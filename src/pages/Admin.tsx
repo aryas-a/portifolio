@@ -25,6 +25,11 @@ interface Settings {
   contact_link: string;
 }
 
+// Media helpers shared with Index page behavior
+const isYouTubeUrl = (url: string) => /(?:youtube\.com\/watch\?v=|youtu\.be\/)/i.test(url);
+const isVimeoUrl = (url: string) => /(?:vimeo\.com\/)/i.test(url);
+const isVideoFileUrl = (url: string) => /(\.mp4|\.webm|\.ogg)(\?.*)?$/i.test(url);
+
 const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -38,6 +43,7 @@ const Admin = () => {
     tech: "",
     link: "",
     image: null as File | null,
+    mediaUrl: "",
   });
   const [editProjectImage, setEditProjectImage] = useState<File | null>(null);
   const navigate = useNavigate();
@@ -166,7 +172,7 @@ const Admin = () => {
     }
 
     try {
-      let imageUrl = null;
+      let imageUrl: string | null = null;
 
       if (newProject.image) {
         const fileExt = newProject.image.name.split(".").pop();
@@ -183,6 +189,8 @@ const Admin = () => {
           .getPublicUrl(fileName);
 
         imageUrl = data.publicUrl;
+      } else if (newProject.mediaUrl.trim()) {
+        imageUrl = newProject.mediaUrl.trim();
       }
 
       const { error } = await supabase.from("projects").insert({
@@ -197,7 +205,7 @@ const Admin = () => {
       if (error) throw error;
 
       toast({ title: "Success", description: "Project added" });
-      setNewProject({ title: "", description: "", tech: "", link: "", image: null });
+      setNewProject({ title: "", description: "", tech: "", link: "", image: null, mediaUrl: "" });
       fetchData();
     } catch (error: any) {
       toast({
@@ -237,7 +245,7 @@ const Admin = () => {
           description: editingProject.description,
           tech: editingProject.tech,
           link: editingProject.link,
-          image_url: imageUrl,
+          image_url: imageUrl, // if user typed Media URL in the form, it's already in editingProject.image_url
         })
         .eq("id", editingProject.id);
 
@@ -351,11 +359,23 @@ const Admin = () => {
                 >
                   <div className="flex gap-4 flex-1">
                     {project.image_url && (
-                      <img
-                        src={project.image_url}
-                        alt={project.title}
-                        className="w-20 h-20 object-cover rounded"
-                      />
+                      isVideoFileUrl(project.image_url) ? (
+                        <video
+                          src={project.image_url}
+                          className="w-20 h-20 object-cover rounded"
+                          controls
+                        />
+                      ) : isYouTubeUrl(project.image_url) || isVimeoUrl(project.image_url) ? (
+                        <div className="w-20 h-20 rounded bg-muted text-xs text-muted-foreground flex items-center justify-center">
+                          External video link
+                        </div>
+                      ) : (
+                        <img
+                          src={project.image_url}
+                          alt={project.title}
+                          className="w-20 h-20 object-cover rounded"
+                        />
+                      )
                     )}
                     <div>
                       <h3 className="font-semibold">{project.title}</h3>
@@ -446,17 +466,35 @@ const Admin = () => {
                     />
                   </div>
                   <div>
-                    <Label>Project Image</Label>
+                    <Label>Media URL (optional)</Label>
+                    <Input
+                      value={editingProject.image_url || ""}
+                      onChange={(e) =>
+                        setEditingProject({ ...editingProject, image_url: e.target.value })
+                      }
+                      placeholder="Paste a YouTube/Vimeo link or a direct image/video URL"
+                    />
+                  </div>
+                  <div>
+                    <Label>Upload Media File (image/video)</Label>
                     {editingProject.image_url && !editProjectImage && (
-                      <img
-                        src={editingProject.image_url}
-                        alt="Current"
-                        className="w-32 h-32 object-cover rounded mb-2"
-                      />
+                      isVideoFileUrl(editingProject.image_url) ? (
+                        <video
+                          src={editingProject.image_url}
+                          className="w-32 h-32 object-cover rounded mb-2"
+                          controls
+                        />
+                      ) : (
+                        <img
+                          src={editingProject.image_url}
+                          alt="Current"
+                          className="w-32 h-32 object-cover rounded mb-2"
+                        />
+                      )
                     )}
                     <Input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       onChange={(e) => setEditProjectImage(e.target.files?.[0] || null)}
                     />
                   </div>
@@ -511,10 +549,20 @@ const Admin = () => {
                     />
                   </div>
                   <div>
-                    <Label>Project Image</Label>
+                    <Label>Media URL (optional)</Label>
+                    <Input
+                      value={newProject.mediaUrl}
+                      onChange={(e) =>
+                        setNewProject({ ...newProject, mediaUrl: e.target.value })
+                      }
+                      placeholder="Paste a YouTube/Vimeo link or a direct image/video URL"
+                    />
+                  </div>
+                  <div>
+                    <Label>Upload Media File (image/video)</Label>
                     <Input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       onChange={(e) =>
                         setNewProject({ ...newProject, image: e.target.files?.[0] || null })
                       }
