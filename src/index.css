@@ -8,91 +8,97 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Light theme colors for multicolor background */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 10%;
 
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
 
-    --primary: 263 70% 65%;
+    /* Softer, more refined purple - professional yet approachable */
+    --primary: 260 80% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 263 90% 75%;
+    --primary-glow: 260 90% 60%;
 
-    --secondary: 240 5% 15%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 240 15% 90%;
+    --secondary-foreground: 240 10% 10%;
 
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 240 10% 92%;
+    --muted-foreground: 240 5% 40%;
 
-    --accent: 210 100% 60%;
+    /* Warm coral accent for friendliness */
+    --accent: 15 90% 55%;
     --accent-foreground: 0 0% 100%;
+
+    /* Secondary accent - warmer blue */
+    --accent-secondary: 200 95% 50%;
+    --accent-secondary-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 10% 15%;
-    --input: 240 10% 15%;
-    --ring: 263 70% 65%;
+    --border: 240 15% 85%;
+    --input: 240 15% 90%;
+    --ring: 260 80% 50%;
 
     --radius: 0.75rem;
-    
-    /* Custom gradient tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 65%), hsl(210 100% 60%));
-    --gradient-hero: linear-gradient(180deg, hsl(240 10% 3.9%), hsl(240 10% 6%));
-    --gradient-card: linear-gradient(135deg, hsl(240 10% 6% / 0.5), hsl(240 10% 8% / 0.5));
-    
-    /* Custom shadows */
-    --shadow-glow: 0 0 40px hsl(263 70% 65% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
+
+    /* Enhanced gradient tokens - warmer and more sophisticated */
+    --gradient-primary: linear-gradient(135deg, hsl(260 80% 50%), hsl(200 95% 50%));
+    --gradient-warm: linear-gradient(135deg, hsl(260 80% 50%), hsl(15 90% 55%));
+    --gradient-hero: linear-gradient(180deg, transparent, hsl(0 0% 100% / 0.3));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.9));
+
+    /* Enhanced shadows for depth on light background */
+    --shadow-glow: 0 0 40px hsl(260 80% 50% / 0.3);
+    --shadow-glow-warm: 0 0 40px hsl(15 90% 55% / 0.3);
+    --shadow-card: 0 10px 40px -10px hsl(240 10% 10% / 0.1);
+    --shadow-card-hover: 0 20px 60px -15px hsl(240 10% 10% / 0.15);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 240 8% 5%;
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 6%;
+    --card: 240 8% 8%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 6%;
+    --popover: 240 8% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 263 70% 65%;
+    --primary: 260 60% 68%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 15%;
+    --secondary: 240 5% 16%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 240 5% 16%;
+    --muted-foreground: 240 5% 68%;
 
-    --accent: 210 100% 60%;
+    --accent: 15 80% 65%;
     --accent-foreground: 0 0% 100%;
+
+    --accent-secondary: 200 85% 60%;
+    --accent-secondary-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 10% 15%;
-    --input: 240 10% 15%;
-    --ring: 263 70% 65%;
+    --border: 240 8% 18%;
+    --input: 240 8% 18%;
+    --ring: 260 60% 68%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -109,7 +115,105 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+
+    /* Vibrant multicolor gradient background */
+    background: linear-gradient(135deg,
+        hsl(260 100% 94%) 0%,
+        hsl(200 100% 94%) 20%,
+        hsl(280 100% 95%) 40%,
+        hsl(15 100% 94%) 60%,
+        hsl(200 100% 95%) 80%,
+        hsl(260 100% 94%) 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+    min-height: 100vh;
+  }
+
+  /* Enhanced focus states for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Custom scrollbar styling - Cross-browser support */
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) hsl(var(--background));
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
+
+  /* Custom text selection color - Works in all modern browsers */
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  /* Firefox-specific selection */
+  ::-moz-selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+}
+
+/* Utility classes for enhanced effects */
+@layer utilities {
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-warm {
+    box-shadow: var(--shadow-glow-warm);
+  }
+
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-warm {
+    background: var(--gradient-warm);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
